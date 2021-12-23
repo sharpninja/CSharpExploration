@@ -1,16 +1,16 @@
 <Project>
     <PropertyGroup>
-        <OrganizationName>GitHub Organization Slug</OrganizationName>
-        <LibraryTemplate>YourProjectId</LibraryTemplate>
-        <ProjectDescription>Describe your project.</ProjectDescription>
-        <AuthorName>Your Name</AuthorName>
-        <AuthorEmail>Your Public Email Address</AuthorEmail>
-        <OwnerName>Project Owner Display Name</OwnerName>
+        <OrganizationName>sharpninja</OrganizationName>
+        <LibraryTemplate>CSharpExploration</LibraryTemplate>
+        <ProjectDescription>Exploring ideas for C#.</ProjectDescription>
+        <AuthorName>The Sharp Ninja</AuthorName>
+        <AuthorEmail>ninja@thesharp.ninja</AuthorEmail>
+        <OwnerName>The Sharp Ninja</OwnerName>
         <CurrentYear>$([System.DateTime]::Now.Year)</CurrentYear>
-        <Tags>Tag1 Tag2</Tags>
+        <Tags>C#</Tags>
         <LicenseTag>MIT</LicenseTag>
         <LicenseAcceptanceRequired>true</LicenseAcceptanceRequired>
-        <IncludeSymbols>true</IncludeSymbols>
-        <IncludeSource>true</IncludeSource>
+        <IncludeSymbols>false</IncludeSymbols>
+        <IncludeSource>false</IncludeSource>
     </PropertyGroup>
 </Project>
