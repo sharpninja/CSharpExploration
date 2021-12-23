@@ -1,0 +1,52 @@
+name: .NET
+
+on:
+  release:
+    types:
+      - created
+  workflow_dispatch:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      event_name: ${{ github.event_name }}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v1
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.x
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 5.0.x
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.x
+
+      # This is important if you want auto-versioning.
+    - name: Setup Gitversion
+      run: |
+        dotnet tool install -g PowerShell
+        dotnet tool install -g gitversion.tool
+        dotnet-gitversion
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build Debug and Test
+      if: ${{ github.event_name == 'push' }}
+      run: |
+        dotnet build -c Debug --no-restore
+        dotnet test --no-build
+
+    - name: Build Release and Publish
+      if: ${{ github.event_name == 'release' || github.event_name == 'workflow_dispatch' }}
+      run: pwsh -nol -nop -f ./scripts/publish.ps1 "${{ secrets.NUGET_KEY }}"

@@ -1,0 +1,16 @@
+<Project>
+    <PropertyGroup>
+        <OrganizationName>sharpninja</OrganizationName>
+        <LibraryTemplate>CSharpExploration</LibraryTemplate>
+        <ProjectDescription>Exploring ideas for C#.</ProjectDescription>
+        <AuthorName>The Sharp Ninja</AuthorName>
+        <AuthorEmail>ninja@thesharp.ninja</AuthorEmail>
+        <OwnerName>The Sharp Ninja</OwnerName>
+        <CurrentYear>$([System.DateTime]::Now.Year)</CurrentYear>
+        <Tags>C#</Tags>
+        <LicenseTag>MIT</LicenseTag>
+        <LicenseAcceptanceRequired>true</LicenseAcceptanceRequired>
+        <IncludeSymbols>false</IncludeSymbols>
+        <IncludeSource>false</IncludeSource>
+    </PropertyGroup>
+</Project>
