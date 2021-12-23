@@ -236,7 +236,7 @@ function Merge-FileName {
         $to = Join-Path (Get-Location) -ChildPath $to
         if(Test-Path $to) { Write-Information "[Merge-TemplateFiles] Renamed File from `"$($merged.OriginalString)`" to `"$($merged.NewString)`": $wasRenamed" }
         else { 
-            dir -Verbose; 
+            Get-ChildItem -Verbose; 
             throw "[$to] was not created. Old file present: $(Test-Path $file.FullName)" 
         }
         $newFile = Get-Item $to -ErrorAction Stop -Verbose:$Verbose
