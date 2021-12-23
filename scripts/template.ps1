@@ -1,8 +1,9 @@
 using namespace System;
 using namespace System.Collections;
 
-[CmdletBinding(SupportsShouldProcess)]
 param(
+    [switch]$WhatIf=$false,
+    [switch]$Verbose=$false
 )
 
 $ErrorActionPreference = 'Break'
@@ -186,7 +187,8 @@ function Merge-TemplateString {
     [CmdletBinding(SupportsShouldProcess)]
     param (
         [MergeResult]$mergeResult,
-        [IEnumerable]$props
+        [IEnumerable]$props,
+        [string]$OriginalString
     )
     Write-Verbose -Verbose:$Verbose -Message "[Merge-TemplateString] Merging $originalString with [$props]"
 
@@ -261,7 +263,7 @@ function Merge-FileContents {
             $line = $contents[$index]
 
             [MergeResult]$merged = New-Object MergeResult;
-            Merge-TemplateString -MergeBase $merged -Props $Properties -OriginalString $line
+            Merge-TemplateString -MergeResult $merged -Props $Properties -OriginalString $line
 
             if ($merged -and $merged.IsChanged()) {
                 $contents[$index] = $merged.NewString
@@ -304,6 +306,8 @@ function Merge-TemplateDirectories {
     [Queue]$queue = New-Object Queue
 
     $ignoreList = @();
+    Write-Information "[Merge-TemplateDirectories] `$WhatIf: `$$WhatIf"
+    Write-Information "[Merge-TemplateDirectories] `$Verbose: `$$Verbose"
     Write-Information "[Merge-TemplateDirectories] Get-DirectoriesToRename: $(Get-DirectoriesToRename $queue)"
 
     while ($queue.Count -gt 0) {
