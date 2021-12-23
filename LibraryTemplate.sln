@@ -1,0 +1,51 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.31911.260
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibraryTemplate", "src\LibraryTemplate\LibraryTemplate.csproj", "{D15B787D-1E9B-4A56-819B-20B80CA00C68}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibraryTemplate.Tests", "tests\LibraryTemplate.Tests\LibraryTemplate.Tests.csproj", "{7FCF7ACE-D97E-4C35-9DB7-A67E04693E1A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{1BCA894A-DF01-486B-B88F-4A9AA7735CC8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{9B07D507-714C-4390-8925-186505D16B12}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{599B04BD-E1F0-4E78-A63B-664335ACC375}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		.github\workflows\dotnet.yml = .github\workflows\dotnet.yml
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{4F50ADFD-6B0D-426E-A7F4-FFD596C20BBD}"
+	ProjectSection(SolutionItems) = preProject
+		scripts\publish.ps1 = scripts\publish.ps1
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D15B787D-1E9B-4A56-819B-20B80CA00C68}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D15B787D-1E9B-4A56-819B-20B80CA00C68}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D15B787D-1E9B-4A56-819B-20B80CA00C68}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D15B787D-1E9B-4A56-819B-20B80CA00C68}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7FCF7ACE-D97E-4C35-9DB7-A67E04693E1A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7FCF7ACE-D97E-4C35-9DB7-A67E04693E1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7FCF7ACE-D97E-4C35-9DB7-A67E04693E1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7FCF7ACE-D97E-4C35-9DB7-A67E04693E1A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D15B787D-1E9B-4A56-819B-20B80CA00C68} = {9B07D507-714C-4390-8925-186505D16B12}
+		{7FCF7ACE-D97E-4C35-9DB7-A67E04693E1A} = {1BCA894A-DF01-486B-B88F-4A9AA7735CC8}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5DEFB297-C76C-4CA2-B91A-7BDA3373E112}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,16 @@
+<Project>
+    <PropertyGroup>
+        <OrganizationName>GitHub Organization Slug</OrganizationName>
+        <LibraryTemplate>YourProjectId</LibraryTemplate>
+        <ProjectDescription>Describe your project.</ProjectDescription>
+        <AuthorName>Your Name</AuthorName>
+        <AuthorEmail>Your Public Email Address</AuthorEmail>
+        <OwnerName>Project Owner Display Name</OwnerName>
+        <CurrentYear>$([System.DateTime]::Now.Year)</CurrentYear>
+        <Tags>Tag1 Tag2</Tags>
+        <LicenseTag>MIT</LicenseTag>
+        <LicenseAcceptanceRequired>true</LicenseAcceptanceRequired>
+        <IncludeSymbols>true</IncludeSymbols>
+        <IncludeSource>true</IncludeSource>
+    </PropertyGroup>
+</Project>
