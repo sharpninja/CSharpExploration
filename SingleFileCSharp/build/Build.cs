@@ -14,6 +14,17 @@ internal class Build : NukeBuild
 {
     private AbsolutePath ArtifactsDirectory => RootDirectory / "artifacts";
 
+    [ Parameter("Github Personal Access Token") ]
+    private string GithubToken
+    {
+        get => _githubToken;
+        set
+        {
+            Console.WriteLine($"GithubToken Length: {value.Length}");
+            _githubToken = value;
+        }
+    }
+
     private Target Clean => _ => _
         .Before(Restore)
         .Executes(() => FileSystemTasks.EnsureCleanDirectory(ArtifactsDirectory));
@@ -45,7 +56,7 @@ internal class Build : NukeBuild
                 ProcessStartInfo info = new()
                 {
                     FileName = "git" ,
-                    Arguments = "push" ,
+                    Arguments = $"push https://sharpninja:{GithubToken}@github.com/sharpninja/CSharpExploration HEAD:main" ,
                     WorkingDirectory = RootDirectory ,
                     RedirectStandardOutput = true ,
                     RedirectStandardError = true ,
@@ -391,4 +402,5 @@ internal class Build : NukeBuild
     }
 
     [ Solution ] private readonly Solution Solution;
+    private string _githubToken;
 }
