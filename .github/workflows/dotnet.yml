@@ -34,10 +34,10 @@ jobs:
       # This is important if you want auto-versioning.
     - name: Setup Gitversion
       run: |
-        dotnet new tool-manifest
+        dotnet new tool-manifest # if you are setting up this repo
+        dotnet tool install --local GitVersion.Tool --version 5.8.1
         dotnet tool install PowerShell
-        dotnet tool install gitversion.tool
-        dotnet tool run dotnet-gitversion
+        dotnet dotnet-gitversion
 
     - name: Build Debug and Test
       if: ${{ github.event_name == 'push' }}
