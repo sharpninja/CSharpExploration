@@ -38,13 +38,10 @@ jobs:
         dotnet tool install -g gitversion.tool
         dotnet-gitversion
 
-    - name: Restore dependencies
-      run: dotnet restore
-
     - name: Build Debug and Test
       if: ${{ github.event_name == 'push' }}
       run: . ./SingleFileCSharp/build.ps1
 
-    - name: Build Release and Publish
-      if: ${{ github.event_name == 'release' || github.event_name == 'workflow_dispatch' }}
-      run: . ./scripts/publish.ps1 "${{ secrets.NUGET_KEY }}"
+#     - name: Build Release and Publish
+#       if: ${{ github.event_name == 'release' || github.event_name == 'workflow_dispatch' }}
+#       run: . ./scripts/publish.ps1 "${{ secrets.NUGET_KEY }}"
