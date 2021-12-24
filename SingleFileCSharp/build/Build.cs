@@ -3,6 +3,10 @@
 // ReSharper disable UnusedMember.Local
 // ReSharper disable NullableWarningSuppressionIsUsed
 
+using Nuke.Common.Utilities.Collections;
+
+using System.Linq;
+
 namespace SingleFileCSharp;
 
 [CheckBuildProjectConfigurations, ShutdownDotNetAfterServerBuild,]
@@ -33,6 +37,32 @@ internal class Build : NukeBuild
                 .SetInformationalVersion(GitVersion.InformationalVersion)
                 .EnableNoRestore()
         ));
+
+    private Target Push => _ => _
+        .DependsOn(Expand)
+        .Executes(() =>
+            {
+                ProcessStartInfo info = new()
+                {
+                    FileName = "git" ,
+                    Arguments = "push" ,
+                    WorkingDirectory = RootDirectory ,
+                    RedirectStandardOutput = true ,
+                    RedirectStandardError = true ,
+                };
+
+                var process = Process.Start(info);
+
+                process.WaitForExit();
+
+                Console.WriteLine(process.StandardOutput.ReadToEnd());
+
+                if (process.ExitCode != 0)
+                {
+                    Console.Error.WriteLine(process.StandardError.ReadToEnd());
+                }
+            }
+        );
 
     private Target Expand => _ => _
         .Executes(() =>
@@ -124,7 +154,25 @@ internal class Build : NukeBuild
                 {
                     Console.WriteLine($"[Expand] Expanded {expandedCount} files.");
 
-                    GitRepository.Apply(g => g);
+                    ProcessStartInfo info = new()
+                    {
+                        FileName = "git" ,
+                        Arguments = $"commit -a -m \"Expanded {expandedCount} files.\"" ,
+                        WorkingDirectory = RootDirectory,
+                        RedirectStandardOutput = true ,
+                        RedirectStandardError = true ,
+                    };
+
+                    var process = Process.Start(info);
+
+                    process.WaitForExit();
+
+                    Console.WriteLine(process.StandardOutput.ReadToEnd());
+
+                    if (process.ExitCode != 0)
+                    {
+                        Console.Error.WriteLine(process.StandardError.ReadToEnd());
+                    }
                 }
             }
         );
@@ -306,6 +354,7 @@ internal class Build : NukeBuild
         }
 
         Solution.Save();
+
         Microsoft.Build.Evaluation.Project msbuildProject = project.GetMSBuildProject();
         Console.WriteLine($"[ProcessToken] Added new project to Solution: {msbuildProject.FullPath}"
         );
@@ -316,7 +365,29 @@ internal class Build : NukeBuild
             $"[ProcessToken] msbuildProject.AllEvaluatedProperties.Count: {msbuildProject.AllEvaluatedProperties.Count}"
         );
 
-        return true;
+        ProcessStartInfo info = new()
+        {
+            FileName = "git" ,
+            Arguments = "add .",
+            WorkingDirectory = projectDirectoryPath,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+        };
+
+        var process = Process.Start(info);
+
+        process.WaitForExit();
+
+        Console.WriteLine(process.StandardOutput.ReadToEnd());
+
+        if (process.ExitCode == 0)
+        {
+            return true;
+        }
+
+        Console.Error.WriteLine(process.StandardError.ReadToEnd());
+
+        return false;
     }
 
     [ Solution ] private readonly Solution Solution;

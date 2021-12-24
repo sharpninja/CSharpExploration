@@ -75,6 +75,7 @@
               "Clean",
               "Compile",
               "Expand",
+              "Push",
               "Restore"
             ]
           }
@@ -92,6 +93,7 @@
               "Clean",
               "Compile",
               "Expand",
+              "Push",
               "Restore"
             ]
           }
