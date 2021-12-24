@@ -58,8 +58,8 @@ jobs:
     - name: Setup Dependencies
       run: |      
         nuget config -set signatureValidationMode=accept
-        dotnet tool install -g dotnet-nuke --configfile ./nuget.config
-        dotnet tool install -g gitversion.tool --configfile ./nuget.config
+        dotnet tool install -g nuke.globaltool --prerelease
+        dotnet tool install -g gitversion.tool --prerelease
 
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
