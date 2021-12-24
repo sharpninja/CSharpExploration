@@ -34,7 +34,8 @@ jobs:
       # This is important if you want auto-versioning.
     - name: Setup Gitversion
       run: |
-        nuget.exe trusted-signers add -name NuGet.org -serviceindex https://api.nuget.org/v3/index.json -ConfigFile ./nuget.config
+        nuget config -set signatureValidationMode=accept
+        if($LASTEXITCODE -ne 0) { throw 'Setting nuget config failed.' }
         dotnet new tool-manifest # if you are setting up this repo
         dotnet tool install --local GitVersion.Tool --prerelease --configfile ./nuget.config
         if($LASTEXITCODE -ne 0) { throw 'Installing `GitVersion.Tool` 5.8.1 failed.' }
