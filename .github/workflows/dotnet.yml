@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     env:
       event_name: ${{ github.event_name }}
 
@@ -42,7 +42,7 @@ jobs:
       if: ${{ github.event_name == 'push' }}
       run: |
         cd ./SingleFileCSharp 
-        . ./build.ps1 --root .
+        . ./build.sh --root .
 
 #     - name: Build Release and Publish
 #       if: ${{ github.event_name == 'release' || github.event_name == 'workflow_dispatch' }}
