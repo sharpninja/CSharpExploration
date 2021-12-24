@@ -10,8 +10,9 @@
           "type": "string",
           "description": "Configuration to build - Default is 'Debug' (local) or 'Release' (server)",
           "enum": [
-            "Debug",
-            "Release"
+            "_debug",
+            "_release",
+            "<Instance>k__BackingField"
           ]
         },
         "Continue": {

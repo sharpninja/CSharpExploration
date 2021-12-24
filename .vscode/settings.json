@@ -1,3 +1,5 @@
 {
-    "dotnet-test-explorer.testProjectPath": "**/*Tests.@(csproj|vbproj|fsproj)"
+    "vssolution.altSolutionFolders": [
+        "SingleFileCSharp"
+    ]
 }
