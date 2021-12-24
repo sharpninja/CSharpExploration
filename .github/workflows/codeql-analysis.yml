@@ -57,11 +57,7 @@ jobs:
     
     - name: Setup Dependencies
       run: |      
-        sudo apt update
-        sudo apt install -y mono-complete nuget
-        sudo curl -o ~/bin/nuget.exe https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
-        ~/bin/nuget config -set signatureValidationMode=accept
-        ~/bin/nuget ./nuget.config trusted-signers add -name NuGet.org -serviceindex https://api.nuget.org/v3/index.json
+        nuget config -set signatureValidationMode=accept
         dotnet tool install -g dotnet-nuke --configfile ./nuget.config
         dotnet tool install -g gitversion.tool --configfile ./nuget.config
 
