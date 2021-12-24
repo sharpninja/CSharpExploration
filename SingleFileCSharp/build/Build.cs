@@ -5,8 +5,6 @@
 
 namespace SingleFileCSharp;
 
-using static StringComparison;
-
 [CheckBuildProjectConfigurations, ShutdownDotNetAfterServerBuild,]
 internal class Build : NukeBuild
 {
@@ -18,28 +16,23 @@ internal class Build : NukeBuild
 
     private Target Restore => _ => _
         .Executes(() =>
-            {
-                DotNetTasks.DotNetRestore(s => s
-                    .SetProjectFile(Solution)
-                );
-            }
+            DotNetTasks.DotNetRestore(s =>
+                s.SetProjectFile(Solution)
+            )
         );
 
     private Target Compile => _ => _
         .DependsOn(Expand)
         .DependsOn(Restore)
         .Executes(() =>
-            {
-                DotNetTasks.DotNetBuild(s => s
-                    .SetProjectFile(Solution)
-                    .SetConfiguration(Configuration)
-                    .SetAssemblyVersion(GitVersion.AssemblySemVer)
-                    .SetFileVersion(GitVersion.AssemblySemFileVer)
-                    .SetInformationalVersion(GitVersion.InformationalVersion)
-                    .EnableNoRestore()
-                );
-            }
-        );
+            DotNetTasks.DotNetBuild(s =>
+            s.SetProjectFile(Solution)
+                .SetConfiguration(Configuration)
+                .SetAssemblyVersion(GitVersion.AssemblySemVer)
+                .SetFileVersion(GitVersion.AssemblySemFileVer)
+                .SetInformationalVersion(GitVersion.InformationalVersion)
+                .EnableNoRestore()
+        ));
 
     private Target Expand => _ => _
         .Executes(() =>
@@ -87,10 +80,9 @@ internal class Build : NukeBuild
 
                             case string s:
                                 //Debugger.Launch();
-                                if (dirPath is not null &&
-                                    dirPath.Contains(s ,
+                                if (dirPath?.Contains(s ,
                                         InvariantCultureIgnoreCase
-                                    ))
+                                    ) == true)
                                 {
                                     toBreak = true;
                                 }
@@ -102,7 +94,7 @@ internal class Build : NukeBuild
                                 break;
 
                             default:
-                                throw new ApplicationException(
+                                throw new InvalidCastException(
                                     $"[Expand] Pattern is wrong type: {pattern.GetType().Name}"
                                 );
                         }
@@ -112,11 +104,6 @@ internal class Build : NukeBuild
                             break;
                         }
                     }
-
-                    //if (toBreak)
-                    //{
-                    //    break;
-                    //}
 
                     if (toBreak)
                     {
@@ -136,6 +123,8 @@ internal class Build : NukeBuild
                 if (expanded)
                 {
                     Console.WriteLine($"[Expand] Expanded {expandedCount} files.");
+
+                    GitRepository.Apply(g => g);
                 }
             }
         );
