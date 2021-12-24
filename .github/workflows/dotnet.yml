@@ -34,7 +34,7 @@ jobs:
       # This is important if you want auto-versioning.
     - name: Setup Gitversion
       run: |
-        dotnet tool init
+        dotnet new tool-manifest
         dotnet tool install PowerShell
         dotnet tool install gitversion.tool
         dotnet tool run dotnet-gitversion
