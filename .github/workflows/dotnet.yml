@@ -36,8 +36,11 @@ jobs:
       run: |
         dotnet new tool-manifest # if you are setting up this repo
         dotnet tool install --local GitVersion.Tool --version 5.8.1
-        dotnet tool install PowerShell
+        if($LASTEXITCODE -ne 0) { throw 'Installing `GitVersion.Tool` 5.8.1 failed.' }
+        dotnet tool install --local PowerShell
+        if($LASTEXITCODE -ne 0) { throw 'Installing `Powershell` failed.' }
         dotnet dotnet-gitversion
+        if($LASTEXITCODE -ne 0) { throw 'Executing `dotnet-gitversion` failed.' }
 
     - name: Build Debug and Test
       if: ${{ github.event_name == 'push' }}
