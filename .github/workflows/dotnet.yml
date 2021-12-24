@@ -38,8 +38,8 @@ jobs:
         "nuget config -set signatureValidationMode=accept -configfile ./nuget.config -verbosity detailed"
         nuget config -set signatureValidationMode=accept -configfile ./nuget.config -verbosity detailed
         if($LASTEXITCODE -ne 0) { throw 'Setting nuget config failed.' }
-        "dotnet nuget trust --allow-untrusted-root --configfile ./nuget.config --verbosity detailed"
-        dotnet nuget trust --allow-untrusted-root --configfile ./nuget.config --verbosity detailed
+        "dotnet nuget trust --allow-untrusted-root true --configfile ./nuget.config --verbosity detailed"
+        dotnet nuget trust --allow-untrusted-root true --configfile ./nuget.config --verbosity detailed
         if($LASTEXITCODE -ne 0) { throw 'Setting nuget trust failed.' }
         dotnet tool install --global GitVersion.Tool --prerelease --configfile ./nuget.config --verbosity detailed
         if($LASTEXITCODE -ne 0) { throw 'Installing `GitVersion.Tool` 5.8.1 failed.' }
