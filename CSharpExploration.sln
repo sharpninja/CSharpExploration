@@ -1,11 +1,11 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.31911.260
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibraryTemplate", "src\LibraryTemplate\LibraryTemplate.csproj", "{D15B787D-1E9B-4A56-819B-20B80CA00C68}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CSharpExploration", "src\CSharpExploration\CSharpExploration.csproj", "{D15B787D-1E9B-4A56-819B-20B80CA00C68}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibraryTemplate.Tests", "tests\LibraryTemplate.Tests\LibraryTemplate.Tests.csproj", "{7FCF7ACE-D97E-4C35-9DB7-A67E04693E1A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CSharpExploration.Tests", "tests\CSharpExploration.Tests\CSharpExploration.Tests.csproj", "{7FCF7ACE-D97E-4C35-9DB7-A67E04693E1A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{1BCA894A-DF01-486B-B88F-4A9AA7735CC8}"
 EndProject
