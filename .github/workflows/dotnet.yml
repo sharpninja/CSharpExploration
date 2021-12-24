@@ -34,19 +34,9 @@ jobs:
       # This is important if you want auto-versioning.
     - name: Setup Dependencies
       run: |
-        dotnet --version
-        "nuget config -set signatureValidationMode=accept -configfile ./nuget.config -verbosity detailed"
-        nuget config -set signatureValidationMode=accept -configfile ./nuget.config -verbosity detailed
-        if($LASTEXITCODE -ne 0) { throw 'Setting nuget config failed.' }
-        "dotnet nuget trust --allow-untrusted-root true --configfile ./nuget.config --verbosity detailed"
-        dotnet nuget trust --allow-untrusted-root true --configfile ./nuget.config --verbosity detailed
-        if($LASTEXITCODE -ne 0) { throw 'Setting nuget trust failed.' }
-        dotnet tool install --global GitVersion.Tool --prerelease --configfile ./nuget.config --verbosity detailed
-        if($LASTEXITCODE -ne 0) { throw 'Installing `GitVersion.Tool` 5.8.1 failed.' }
-        dotnet tool install --global PowerShell --prerelease --configfile ./nuget.config --verbosity detailed
-        if($LASTEXITCODE -ne 0) { throw 'Installing `Powershell` failed.' }
-        dotnet-gitversion
-        if($LASTEXITCODE -ne 0) { throw 'Executing `dotnet-gitversion` failed.' }
+        nuget config -set signatureValidationMode=accept
+        dotnet tool install -g nuke.globaltool --prerelease
+        dotnet tool install -g gitversion.tool --prerelease
 
     - name: Build Debug and Test
       if: ${{ github.event_name == 'push' }}
