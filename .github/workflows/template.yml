@@ -25,6 +25,9 @@ jobs:
     - name: Merge Template
       run: |
         . scripts/template.ps1 -Verbose
+        
+        git config user.email "ninja@thesharp.ninja"
+        git config user.name "Github Actions"
         git add .
         git commit -m "Merged Template"
         git push ${{ github.repository }}
