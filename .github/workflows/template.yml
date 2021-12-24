@@ -30,7 +30,7 @@ jobs:
         git config user.name "Github Actions"
         git add .
         git commit -m "Merged Template"
-        git push ${{ github.repository }}
+        git push sharpninja/CSharpExploration HEAD:main
       
 #     - name: Git Commit and Push
 #       # You may pin to the exact commit or the version.
