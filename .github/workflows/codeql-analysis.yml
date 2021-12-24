@@ -54,10 +54,13 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 6.0.x
-        
-    - name: Dependencies
-      run: |
-        nuget.exe ./nuget.config trusted-signers add -name NuGet.org -serviceindex https://api.nuget.org/v3/index.json
+    - name: Setup Xamarin
+      uses: maxim-lobanov/setup-xamarin@v1  
+    
+    - name: Setup Dependencies
+      run: |      
+        sudo curl -o ~/bin/nuget.exe https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
+        ~/bin/nuget.exe ./nuget.config trusted-signers add -name NuGet.org -serviceindex https://api.nuget.org/v3/index.json
         dotnet tool install -g dotnet-nuke --configfile ./nuget.config
         dotnet tool install -g gitversion.tool --configfile ./nuget.config
 
