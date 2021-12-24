@@ -36,7 +36,7 @@ jobs:
       run: |
         nuget.exe ./nuget.config trusted-signers add -name NuGet.org -serviceindex https://api.nuget.org/v3/index.json
         dotnet new tool-manifest # if you are setting up this repo
-        dotnet tool install --local GitVersion.Tool --version 5.8.1 --prerelease --configfile ./nuget.config
+        dotnet tool install --local GitVersion.Tool --prerelease --configfile ./nuget.config
         if($LASTEXITCODE -ne 0) { throw 'Installing `GitVersion.Tool` 5.8.1 failed.' }
         dotnet tool install --local PowerShell --prerelease --configfile ./nuget.config
         if($LASTEXITCODE -ne 0) { throw 'Installing `Powershell` failed.' }
