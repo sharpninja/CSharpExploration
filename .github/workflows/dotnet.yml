@@ -43,10 +43,8 @@ jobs:
 
     - name: Build Debug and Test
       if: ${{ github.event_name == 'push' }}
-      run: |
-        dotnet build -c Debug --no-restore
-        dotnet test --no-build
+      run: . ./SingleFileCSharp/build.ps1
 
     - name: Build Release and Publish
       if: ${{ github.event_name == 'release' || github.event_name == 'workflow_dispatch' }}
-      run: pwsh -nol -nop -f ./scripts/publish.ps1 "${{ secrets.NUGET_KEY }}"
+      run: . ./scripts/publish.ps1 "${{ secrets.NUGET_KEY }}"
