@@ -44,7 +44,7 @@ jobs:
       if: ${{ github.event_name == 'push' }}
       run: |
         cd ./SingleFileCSharp 
-        . ./build.sh Compile Push --root .
+        . ./build.sh Compile Push --root . --GithubToken "${{ secrets.GITHUB_TOKEN }}"
 
 #     - name: Build Release and Publish
 #       if: ${{ github.event_name == 'release' || github.event_name == 'workflow_dispatch' }}
