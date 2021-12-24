@@ -34,6 +34,8 @@ jobs:
       # This is important if you want auto-versioning.
     - name: Setup Dependencies
       run: |
+        git config user.email "ninja@thesharp.ninja"
+        git config user.name "Github Actions"
         nuget config -set signatureValidationMode=accept
         dotnet tool install -g nuke.globaltool --prerelease
         dotnet tool install -g gitversion.tool --prerelease
@@ -42,7 +44,7 @@ jobs:
       if: ${{ github.event_name == 'push' }}
       run: |
         cd ./SingleFileCSharp 
-        . ./build.sh --root .
+        . ./build.sh Compile Push --root .
 
 #     - name: Build Release and Publish
 #       if: ${{ github.event_name == 'release' || github.event_name == 'workflow_dispatch' }}
