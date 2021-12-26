@@ -17,16 +17,11 @@
 namespace ParseYaml;
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Xml.Linq;
 
 using Newtonsoft.Json;
 
-using YamlDotNet;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
@@ -55,24 +50,26 @@ public static class Program
       
   public static string YamlToXml(this string yaml)
   {
-    var deserializer = new DeserializerBuilder()
-      .WithNamingConvention(CamelCaseNamingConvention.Instance)
-      .Build();
+    IDeserializer deserializer = new DeserializerBuilder()
+                                .WithNamingConvention(CamelCaseNamingConvention.Instance)
+                                .Build();
 
-    var project = deserializer
-      .Deserialize(new StringReader(yaml));
+    object project = deserializer
+     .Deserialize(new StringReader(yaml));
 
-    var serializer = new SerializerBuilder()
-      .JsonCompatible()
-      .Build();
-    var json = serializer.Serialize(project);
-        
+    ISerializer serializer = new SerializerBuilder()
+                            .JsonCompatible()
+                            .Build();
+
+    string json = serializer.Serialize(project);
+
     while (json.Contains("\"_"))
     {
-      json = json.Replace("\"_", "\"@");
+      json = json.Replace("\"_",
+                          "\"@");
     }
 
-    var xml = JsonConvert.DeserializeXNode(json);
+    XDocument xml = JsonConvert.DeserializeXNode(json);
 
     return xml.ToString();
   }

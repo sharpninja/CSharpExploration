@@ -15,36 +15,36 @@ jobs:
       event_name: ${{ github.event_name }}
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v1
+      - name: Checkout
+        uses: actions/checkout@v1
 
-    - name: Setup .NET 3.1.x
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: 3.1.x
-    - name: Setup .NET 5.0.x
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: 5.0.x
-    - name: Setup .NET 6.0.x
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: 6.0.x
+      - name: Setup .NET 3.1.x
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 3.1.x
+      - name: Setup .NET 5.0.x
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 5.0.x
+      - name: Setup .NET 6.0.x
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 6.0.x
+        
+        # This is important if you want auto-versioning.
+      - name: Setup Dependencies
+        run: |
+          git config user.email "ninja@thesharp.ninja"
+          git config user.name "Github Actions"
+          nuget config -set signatureValidationMode=accept
+          dotnet tool install -g nuke.globaltool --prerelease
+          dotnet tool install -g gitversion.tool --prerelease
 
-      # This is important if you want auto-versioning.
-    - name: Setup Dependencies
-      run: |
-        git config user.email "ninja@thesharp.ninja"
-        git config user.name "Github Actions"
-        nuget config -set signatureValidationMode=accept
-        dotnet tool install -g nuke.globaltool --prerelease
-        dotnet tool install -g gitversion.tool --prerelease
-
-    - name: Build Debug and Test
-      if: ${{ github.event_name == 'push' }}
-      run: |
-        cd ./SingleFileCSharp 
-        . ./build.sh Compile Push --root . --GithubToken "${{ secrets.GITHUB_TOKEN }}"
+      - name: Build Debug and Test
+        if: ${{ github.event_name == 'push' }}
+        run: |
+          cd ./SingleFileCSharp 
+          . ./build.sh Compile Push --root . --GithubToken "${{ secrets.GITHUB_TOKEN }}"
 
 #     - name: Build Release and Publish
 #       if: ${{ github.event_name == 'release' || github.event_name == 'workflow_dispatch' }}

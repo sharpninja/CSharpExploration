@@ -4,8 +4,8 @@ namespace ParseYaml;
 
 public static class Program
 {
-  private const string YAML =
-    @"Project:
+    private const string YAML =
+        @"Project:
   _Sdk: Microsoft.NET.Sdk
 
   PropertyGroup:
@@ -22,30 +22,32 @@ public static class Program
 
 ";
 
-  public static void Main(string[] args)
-    => Console.WriteLine(YAML.YamlToXml());
-      
-  public static string YamlToXml(this string yaml)
-  {
-    var deserializer = new DeserializerBuilder()
-      .WithNamingConvention(CamelCaseNamingConvention.Instance)
-      .Build();
+    public static void Main(string[] args)
+        => Console.WriteLine(Program.YAML.YamlToXml());
 
-    var project = deserializer
-      .Deserialize(new StringReader(yaml));
-
-    var serializer = new SerializerBuilder()
-      .JsonCompatible()
-      .Build();
-    var json = serializer.Serialize(project);
-        
-    while (json.Contains("\"_"))
+    public static string YamlToXml(this string yaml)
     {
-      json = json.Replace("\"_", "\"@");
+        IDeserializer deserializer = new DeserializerBuilder()
+                                    .WithNamingConvention(CamelCaseNamingConvention.Instance)
+                                    .Build();
+
+        object project = deserializer
+           .Deserialize(new StringReader(yaml));
+
+        ISerializer serializer = new SerializerBuilder()
+                                .JsonCompatible()
+                                .Build();
+
+        string json = serializer.Serialize(project);
+
+        while (json.Contains("\"_"))
+        {
+            json = json.Replace("\"_",
+                                "\"@");
+        }
+
+        XDocument xml = JsonConvert.DeserializeXNode(json);
+
+        return xml.ToString();
     }
-
-    var xml = JsonConvert.DeserializeXNode(json);
-
-    return xml.ToString();
-  }
 }

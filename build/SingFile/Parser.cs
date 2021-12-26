@@ -1,23 +1,42 @@
-﻿using System.Linq;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Newtonsoft.Json;
-using Nuke.Common.ProjectModel;
-using Serilog;
-using YamlDotNet.Serialization;
-using YamlDotNet.Serialization.NamingConventions;
+﻿
 
 // ReSharper disable EmptyNamespace
 
 namespace SingleFileCSharp.SingFile;
 
-internal class Parser: NukeBuild
+internal class Parser : NukeBuild
 {
     private const string DEFAULT_XML = "<Project />";
+    private readonly string? _githubToken;
+
+    [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
+    protected readonly Configuration configuration = NukeBuild.IsLocalBuild
+                                                         ? Configuration.Debug
+                                                         : Configuration.Release;
+
+    [GitRepository] protected readonly GitRepository? gitRepository;
+    [GitVersion] protected readonly GitVersion? gitVersion;
+
+    [Solution] protected readonly Solution? solution;
+
+    protected static AbsolutePath ArtifactsDirectory
+        => NukeBuild.RootDirectory / "artifacts";
+
+    [Parameter("Github Personal Access Token")]
+    protected string? GithubToken
+    {
+        get
+            => _githubToken;
+        set
+        {
+            Log.Information($"GithubToken Length: {value?.Length ?? -1}");
+            _githubToken = value;
+        }
+    }
 
     internal bool ProcessFile([NotNull] string file)
     {
-        const string RESULT_TEMPLATE = "[ProcessFile] {0}";
+        const string resultTemplate = "[ProcessFile] {0}";
         string? result = null;
 
         try
@@ -35,7 +54,7 @@ internal class Parser: NukeBuild
 
             if (programText is null or "")
             {
-                result = string.Format(RESULT_TEMPLATE , "programText is null or empty.");
+                result = string.Format(resultTemplate , "programText is null or empty.");
                 return false;
             }
 
@@ -44,65 +63,71 @@ internal class Parser: NukeBuild
             CompilationUnitSyntax root = tree.GetCompilationUnitRoot();
 
             bool fileExpanded = false;
+
             foreach (SyntaxTrivia item in root.GetLeadingTrivia())
             {
-                var kind = item.Kind();
+                SyntaxKind kind = item.Kind();
                 Log.Information($"kind: {kind}");
+
                 bool processed = kind switch
-                {
-                    SyntaxKind.SingleLineDocumentationCommentTrivia =>
-                        ProcessToken(fileInfo , item, root) ,
-                    _ => false ,
-                };
+                                 {
+                                     SyntaxKind.SingleLineDocumentationCommentTrivia =>
+                                         ProcessToken(fileInfo , item , root) ,
+                                     _ => false
+                                 };
 
                 if (processed)
                 {
-                    result = string.Format(RESULT_TEMPLATE , $"Processed {file}");
+                    result = string.Format(resultTemplate , $"Processed {file}");
                     fileExpanded = true;
                 }
             }
 
-            result = string.Format(RESULT_TEMPLATE , $"Nothing to do in {file}");
+            result = string.Format(resultTemplate , $"Nothing to do in {file}");
             return fileExpanded;
         }
         finally
         {
-            Log.Information(result ?? string.Format(RESULT_TEMPLATE , $"No result specified in {file}."));
+            Log.Information(result
+                         ?? string.Format(resultTemplate , $"No result specified in {file}."));
         }
     }
 
-    private List<SyntaxNode> GetUsingDirectives(FileInfo fileInfo , CompilationUnitSyntax root)
+    private List<SyntaxNode> GetUsingDirectives(FileInfo fileInfo ,
+                                                CompilationUnitSyntax root)
     {
         List<SyntaxNode> usingDirectives = new();
+
         if (root is null)
         {
             return usingDirectives;
         }
 
-        var directive = root.GetFirstToken(includeDirectives: true); 
+        SyntaxToken directive = root.GetFirstToken(includeDirectives: true);
 
         if (directive.Parent is null)
         {
             directive = directive.GetNextToken(includeDirectives: true);
         }
-        
+
         while ((directive.Parent?.Kind() ?? SyntaxKind.None) != SyntaxKind.None)
         {
-            var kind = directive.Parent?.Kind();
-            
-            Serilog.Log.Information($"kind: {kind}");
+            SyntaxKind? kind = directive.Parent?.Kind();
+
+            Log.Information($"kind: {kind}");
 
             bool found = kind switch
-            {
-                SyntaxKind.UsingDirective => true ,
-                _ => false
-            };
+                         {
+                             SyntaxKind.UsingDirective => true ,
+                             _ => false
+                         };
 
             if (found)
             {
-                var node = directive.Parent;
+                SyntaxNode? node = directive.Parent;
                 string? code = node?.ToFullString();
                 Log.Information($"Using Directive: [{code}]");
+
                 if (node != null)
                 {
                     usingDirectives.Add(node);
@@ -112,15 +137,16 @@ internal class Parser: NukeBuild
             directive = directive.GetNextToken(includeDirectives: true);
         }
 
-        return usingDirectives.Distinct().ToList();
+        return usingDirectives.Distinct()
+                              .ToList();
     }
 
-    private bool ProcessToken(
-        FileInfo fileInfo , 
-        SyntaxTrivia trivia, 
-        CompilationUnitSyntax root)
+    private bool ProcessToken(FileInfo fileInfo ,
+                              SyntaxTrivia trivia ,
+                              CompilationUnitSyntax root)
     {
         SyntaxNode? structure = trivia.GetStructure();
+
         if (structure == null)
         {
             return false;
@@ -128,19 +154,22 @@ internal class Parser: NukeBuild
 
         root = root.RemoveNode(structure , SyntaxRemoveOptions.KeepNoTrivia) ?? root;
 
-        if (Solution is null)
+        if (solution is null)
         {
             throw new NullReferenceException("No Solution is assigned.");
         }
 
         string triviaText = trivia.ToFullString();
+
         IEnumerable<string> lines = triviaText
-            .Split('\n' , StringSplitOptions.TrimEntries)
-            .Select(static l => l.Replace("///" , "" , Ordinal));
+                                   .Split('\n' , StringSplitOptions.TrimEntries)
+                                   .Select(static l => l.Replace("///" , "" ,
+                                                                 StringComparison.Ordinal));
 
         triviaText = string.Join(Environment.NewLine , lines);
 
         string? projectXml = null;
+
         try
         {
             XDocument xml = XDocument.Parse(triviaText);
@@ -149,7 +178,7 @@ internal class Parser: NukeBuild
             {
                 return false;
             }
-            
+
             Log.Information($"[ProcessToken] {fileInfo.Name} has valid Project xml.");
 
             projectXml = xml.ToString();
@@ -165,10 +194,9 @@ internal class Parser: NukeBuild
         }
 
         string projectDirectoryPath =
-            Path.Combine(
-                fileInfo.Directory!.FullName ,
-                fileInfo.Name.Replace(fileInfo.Extension , "" , InvariantCultureIgnoreCase)
-            );
+            Path.Combine(fileInfo.Directory!.FullName ,
+                         fileInfo.Name.Replace(fileInfo.Extension , "" ,
+                                               StringComparison.InvariantCultureIgnoreCase));
 
         DirectoryInfo projectDirectory = new(projectDirectoryPath);
 
@@ -176,15 +204,13 @@ internal class Parser: NukeBuild
 
         string projectName = projectDirectory.Name;
 
-        Project oldProject = Solution.GetProject(projectName);
+        Project oldProject = solution.GetProject(projectName);
 
         if (oldProject is not null)
         {
-            Log.Information(
-                $"[ProcessToken] Removing {projectName} from Solution ({Solution.FileName})"
-            );
-            Solution.RemoveProject(oldProject);
-            Solution.Save();
+            Log.Information($"[ProcessToken] Removing {projectName} from Solution ({solution.FileName})");
+            solution.RemoveProject(oldProject);
+            solution.Save();
         }
 
         if (projectDirectory.Exists)
@@ -195,17 +221,16 @@ internal class Parser: NukeBuild
         projectDirectory.Create();
 
         string csprojFilename =
-            Path.Combine(
-                projectDirectory.FullName ,
-                fileInfo.Name.Replace(fileInfo.Extension , ".csproj" , InvariantCultureIgnoreCase)
-            );
+            Path.Combine(projectDirectory.FullName ,
+                         fileInfo.Name.Replace(fileInfo.Extension , ".csproj" ,
+                                               StringComparison.InvariantCultureIgnoreCase));
 
         FileInfo projectFile = new(csprojFilename);
-        
-        using StreamWriter writer = new (projectFile.OpenWrite());
-        
+
+        using StreamWriter writer = new(projectFile.OpenWrite());
+
         writer.Write(projectXml);
-        
+
         writer.Close();
 
         if (!projectFile.Exists)
@@ -214,16 +239,22 @@ internal class Parser: NukeBuild
         }
 
         Log.Information($"[ProcessToken] Created project file: {csprojFilename}");
-        
+
         List<SyntaxNode>? usingDirectives = GetUsingDirectives(fileInfo , root!);
 
-        if (usingDirectives is { Count: > 0 })
+        if (usingDirectives is
+            {
+                Count: > 0
+            })
         {
-            string globalUsingsFileName = Path.Combine(projectDirectory.FullName , "GlobalUsings.cs");
-            string code = string.Join(
-                Environment.NewLine ,
-                usingDirectives.Select(d => $"global {d.ToFullString().Trim()}"));
-            File.WriteAllText(globalUsingsFileName, code);
+            string globalUsingsFileName
+                = Path.Combine(projectDirectory.FullName , "GlobalUsings.cs");
+
+            string code = string.Join(Environment.NewLine ,
+                                      usingDirectives
+                                         .Select(d => $"global {d.ToFullString().Trim()}"));
+
+            File.WriteAllText(globalUsingsFileName , code);
 
             root = root.RemoveNodes(usingDirectives , SyntaxRemoveOptions.KeepNoTrivia) ?? root;
         }
@@ -244,53 +275,48 @@ internal class Parser: NukeBuild
 
         Log.Information($"[ProcessToken] Wrote Source to {newFile.FullName}");
 
-        Project project = Solution.AddProject(
-            projectFile.Name.Replace(projectFile.Extension , "" , InvariantCultureIgnoreCase) ,
-            ProjectType.CSharpProject.FirstGuid ,
-            projectFile.FullName ,
-            Guid.NewGuid() ,
-            new Dictionary<string , string>
-            {
-                {
-                    "Debug|Any CPU.ActiveCfg" , "Debug|Any CPU"
-                } ,
-                {
-                    "Debug|Any CPU.Build.0" , "Debug|Any CPU"
-                } ,
-                {
-                    "Release|Any CPU.ActiveCfg" , "Release|Any CPU"
-                } ,
-                {
-                    "Release|Any CPU.Build.0" , "Release|Any CPU"
-                } ,
-            }
-        );
+        Project project
+            = solution
+               .AddProject(projectFile.Name.Replace(projectFile.Extension , "" , StringComparison.InvariantCultureIgnoreCase) ,
+                           ProjectType.CSharpProject.FirstGuid ,
+                           projectFile.FullName ,
+                           Guid.NewGuid() ,
+                           new Dictionary<string , string>
+                           {
+                               {
+                                   "Debug|Any CPU.ActiveCfg" , "Debug|Any CPU"
+                               } ,
+                               {
+                                   "Debug|Any CPU.Build.0" , "Debug|Any CPU"
+                               } ,
+                               {
+                                   "Release|Any CPU.ActiveCfg" , "Release|Any CPU"
+                               } ,
+                               {
+                                   "Release|Any CPU.Build.0" , "Release|Any CPU"
+                               }
+                           });
 
         if (project is null)
         {
             return true;
         }
 
-        Solution.Save();
+        solution.Save();
 
         Microsoft.Build.Evaluation.Project msbuildProject = project.GetMSBuildProject();
-        Log.Information($"[ProcessToken] Added new project to Solution: {msbuildProject.FullPath}"
-        );
-        Log.Information(
-            $"[ProcessToken] msbuildProject.AllEvaluatedItems.Count: {msbuildProject.AllEvaluatedItems.Count}"
-        );
-        Log.Information(
-            $"[ProcessToken] msbuildProject.AllEvaluatedProperties.Count: {msbuildProject.AllEvaluatedProperties.Count}"
-        );
+        Log.Information($"[ProcessToken] Added new project to Solution: {msbuildProject.FullPath}");
+        Log.Information($"[ProcessToken] msbuildProject.AllEvaluatedItems.Count: {msbuildProject.AllEvaluatedItems.Count}");
+        Log.Information($"[ProcessToken] msbuildProject.AllEvaluatedProperties.Count: {msbuildProject.AllEvaluatedProperties.Count}");
 
         ProcessStartInfo info = new()
-        {
-            FileName = "git" ,
-            Arguments = "add ." ,
-            WorkingDirectory = projectDirectoryPath ,
-            RedirectStandardOutput = true ,
-            RedirectStandardError = true ,
-        };
+                                {
+                                    FileName = "git" ,
+                                    Arguments = "add ." ,
+                                    WorkingDirectory = projectDirectoryPath ,
+                                    RedirectStandardOutput = true ,
+                                    RedirectStandardError = true
+                                };
 
         Process? process = Process.Start(info);
 
@@ -307,57 +333,34 @@ internal class Parser: NukeBuild
 
         return false;
     }
-    
-    [ Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)") ]
-    protected readonly Configuration Configuration = IsLocalBuild
-        ? Configuration.Debug
-        : Configuration.Release;
-
-    [ GitRepository ] protected readonly GitRepository? GitRepository;
-    [ GitVersion ] protected readonly GitVersion? GitVersion;
-
-    [ Solution ] protected readonly Solution? Solution;
-    private string? _githubToken;
-    
-    protected static AbsolutePath ArtifactsDirectory => RootDirectory / "artifacts";
-
-    [ Parameter("Github Personal Access Token") ]
-    protected string? GithubToken
-    {
-        get => _githubToken;
-        set
-        {
-            Log.Information($"GithubToken Length: {value?.Length ?? -1}");
-            _githubToken = value;
-        }
-    }
 
     public string YamlToXml(string yaml)
     {
         IDeserializer deserializer = new DeserializerBuilder()
-            .WithNamingConvention(CamelCaseNamingConvention.Instance)
-            .Build();
+                                    .WithNamingConvention(CamelCaseNamingConvention.Instance)
+                                    .Build();
 
         object? project = deserializer
-            .Deserialize(new StringReader(yaml));
+           .Deserialize(new StringReader(yaml));
 
         if (project is null or "")
         {
-            return DEFAULT_XML;
+            return Parser.DEFAULT_XML;
         }
 
         ISerializer serializer = new SerializerBuilder()
-            .JsonCompatible()
-            .Build();
+                                .JsonCompatible()
+                                .Build();
+
         string json = serializer.Serialize(project);
-        
-        while (json.Contains("\"_", Ordinal))
+
+        while (json.Contains("\"_" , StringComparison.Ordinal))
         {
-            json = json.Replace("\"_", "\"@", Ordinal);
+            json = json.Replace("\"_" , "\"@" , StringComparison.Ordinal);
         }
 
         XDocument? xml = JsonConvert.DeserializeXNode(json);
 
-        return xml?.ToString() ?? DEFAULT_XML;
+        return xml?.ToString() ?? Parser.DEFAULT_XML;
     }
 }
