@@ -1,8 +1,6 @@
+// ReSharper disable EmptyNamespace
+
 namespace SingleFileCSharp;
-
-using System;
-
-using Newtonsoft.Json;
 
 public static class Program
 {

@@ -1,6 +1,7 @@
 // ReSharper disable InconsistentNaming
 
 // ReSharper disable AnnotateNotNullTypeMember
+// ReSharper disable MemberCanBePrivate.Global
 namespace SingleFileCSharp;
 
 
@@ -41,8 +42,8 @@ internal sealed class Configuration : Enumeration
         }
     }
 
-    private static Configuration _debug;
-    private static Configuration _release;
+    private static Configuration? _debug;
+    private static Configuration? _release;
 
     public override bool Equals(object obj)
         => GetHashCode().Equals(obj?.GetHashCode());

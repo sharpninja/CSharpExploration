@@ -1,13 +1,15 @@
-/// <Project Sdk="Microsoft.NET.Sdk">
-///  <PropertyGroup>
-///    <OutputType>Exe</OutputType>
-///    <TargetFramework>net6.0</TargetFramework>
-///    <RootNamespace>SingleFileCSharp</RootNamespace>
-///   </PropertyGroup>
-///   <ItemGroup>
-///     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-///   </ItemGroup>
-/// </Project>
+// ReSharper disable EmptyNamespace
+
+/// Project:
+///  PropertyGroup:
+///    OutputType: Exe
+///    TargetFramework: net6.0
+///    RootNamespace: SingleFileCSharp
+///  ItemGroup:
+///    PackageReference:
+///      _Include: Newtonsoft.Json
+///      _Version: 13.0.1
+///  _Sdk: Microsoft.NET.Sdk
 namespace SingleFileCSharp;
 
 using System;

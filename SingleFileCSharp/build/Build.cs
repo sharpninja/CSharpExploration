@@ -3,52 +3,100 @@
 // ReSharper disable UnusedMember.Local
 // ReSharper disable NullableWarningSuppressionIsUsed
 
-using Nuke.Common.Utilities.Collections;
-
 using System.Linq;
+using Nuke.Common.IO;
+using Nuke.Common.Tools.DotNet;
+using SingleFileCSharp.SingFile;
+// ReSharper disable TemplateIsNotCompileTimeConstantProblem
+
+// ReSharper disable EmptyNamespace
 
 namespace SingleFileCSharp;
 
-[CheckBuildProjectConfigurations, ShutdownDotNetAfterServerBuild,]
-internal class Build : NukeBuild
+[CheckBuildProjectConfigurations , ShutdownDotNetAfterServerBuild ,]
+internal class Build : Parser
 {
-    private AbsolutePath ArtifactsDirectory => RootDirectory / "artifacts";
-
-    [ Parameter("Github Personal Access Token") ]
-    private string GithubToken
-    {
-        get => _githubToken;
-        set
-        {
-            Console.WriteLine($"GithubToken Length: {value.Length}");
-            _githubToken = value;
-        }
-    }
+    public static int Main()
+        => Execute<Build>(static x => x.Run);
 
     private Target Clean => _ => _
         .Before(Restore)
         .Executes(() => FileSystemTasks.EnsureCleanDirectory(ArtifactsDirectory));
 
-    private Target Restore => _ => _
-        .Executes(() =>
+    private Target Restore => _ =>
+    {
+        Serilog.Log.Information($"[Restore] PWD: {Solution?.Directory}");
+        IReadOnlyCollection<Output> Actions() =>
             DotNetTasks.DotNetRestore(s =>
-                s.SetProjectFile(Solution)
-            )
-        );
+            {
+                s = s.SetProjectFile(Solution)
+                    .SetProcessWorkingDirectory(Solution!.Directory);
+                if (File.Exists(Solution!.Directory / "nuget.config"))
+                {
+                    s = s.SetConfigFile(Solution.Directory / "nuget.config");
+                }
+
+                return s;
+            });
+
+        return _
+            .Executes(Actions);
+    };
 
     private Target Compile => _ => _
         .DependsOn(Expand)
         .DependsOn(Restore)
         .Executes(() =>
             DotNetTasks.DotNetBuild(s =>
-            s.SetProjectFile(Solution)
-                .SetConfiguration(Configuration)
-                .SetAssemblyVersion(GitVersion.AssemblySemVer)
-                .SetFileVersion(GitVersion.AssemblySemFileVer)
-                .SetInformationalVersion(GitVersion.InformationalVersion)
-                .EnableNoRestore()
-        ));
+            {
+                s = s.SetProjectFile(Solution)
+                    .SetConfiguration(Configuration)
+                    .SetProcessWorkingDirectory(Solution!.Directory)
+                    .EnableNoRestore();
 
+                if (GitVersion is not null)
+                {
+                    s = s.SetAssemblyVersion(GitVersion?.AssemblySemVer)
+                        .SetFileVersion(GitVersion?.AssemblySemFileVer)
+                        .SetInformationalVersion(GitVersion?.InformationalVersion);
+                }
+
+                return s;
+            }));
+
+    private Target Run => _ => _
+        .DependsOn(Compile)
+        .Executes(() =>
+        {
+            IReadOnlyCollection<AbsolutePath> files = RootDirectory
+                .GlobFiles("**/bin/**/*.exe");
+
+            foreach (var path in files)
+            {
+                if (!path.Contains("build.exe"))
+                {
+                    ProcessStartInfo info = new()
+                    {
+                        FileName = path,
+                        WorkingDirectory = Path.GetDirectoryName(path) ,
+                        RedirectStandardOutput = true ,
+                        RedirectStandardError = true ,
+                    };
+
+                    Process? process = Process.Start(info);
+
+                    process?.WaitForExit();
+
+                    Serilog.Log.Information(process?.StandardOutput.ReadToEnd());
+                    
+                    if(process?.ExitCode != 0)
+                    {
+                        Serilog.Log.Error(process?.StandardError.ReadToEnd());
+                    }
+                }
+            }
+        });
+    
     private Target Push => _ => _
         .DependsOn(Expand)
         .Executes(() =>
@@ -56,21 +104,22 @@ internal class Build : NukeBuild
                 ProcessStartInfo info = new()
                 {
                     FileName = "git" ,
-                    Arguments = $"push https://sharpninja:{GithubToken}@github.com/sharpninja/CSharpExploration HEAD:main" ,
+                    Arguments =
+                        $"push https://sharpninja:{GithubToken}@github.com/sharpninja/CSharpExploration HEAD:main" ,
                     WorkingDirectory = RootDirectory ,
                     RedirectStandardOutput = true ,
                     RedirectStandardError = true ,
                 };
 
-                var process = Process.Start(info);
+                Process? process = Process.Start(info);
 
-                process.WaitForExit();
+                process?.WaitForExit();
 
-                Console.WriteLine(process.StandardOutput.ReadToEnd());
+                Serilog.Log.Information(process?.StandardOutput.ReadToEnd());
 
-                if (process.ExitCode != 0)
+                if ((process?.ExitCode ?? -1) != 0)
                 {
-                    Console.Error.WriteLine(process.StandardError.ReadToEnd());
+                    Console.Error.WriteLine(process?.StandardError.ReadToEnd());
                 }
             }
         );
@@ -92,15 +141,21 @@ internal class Build : NukeBuild
                 // case-insensitive.
                 List<object> skipPatterns = new()
                 {
-                    new Regex(@"\b(build|obj)\b", REGEX_OPTIONS),
+                    new Regex(@"\b(build|obj)\b" , REGEX_OPTIONS) ,
                 };
 
-                int expandedCount=0;
+                int expandedCount = 0;
                 bool expanded = false;
 
                 foreach (string file in files)
                 {
-                    string dirPath = Path.GetDirectoryName(file);
+                    string? dirPath = Path.GetDirectoryName(file);
+
+                    if (dirPath is null or "")
+                    {
+                        Serilog.Log.Warning($"Could not get directory name for [{file}]");
+                        continue;
+                    }
 
                     bool toBreak = false;
                     foreach (object pattern in skipPatterns)
@@ -114,7 +169,7 @@ internal class Build : NukeBuild
                                 }
                                 else
                                 {
-                                    Console.WriteLine($"[Expand] [{r}] does not match [{dirPath}]");
+                                    Serilog.Log.Information($"[Expand] [{r}] does not match [{dirPath}]");
                                 }
 
                                 break;
@@ -122,14 +177,14 @@ internal class Build : NukeBuild
                             case string s:
                                 //Debugger.Launch();
                                 if (dirPath?.Contains(s ,
-                                        InvariantCultureIgnoreCase
-                                    ) == true)
+                                    InvariantCultureIgnoreCase
+                                ) == true)
                                 {
                                     toBreak = true;
                                 }
                                 else
                                 {
-                                    Console.WriteLine($"[Expand] [{s}] does not match [{dirPath}]");
+                                    Serilog.Log.Information($"[Expand] [{s}] does not match [{dirPath}]");
                                 }
 
                                 break;
@@ -163,244 +218,28 @@ internal class Build : NukeBuild
 
                 if (expanded)
                 {
-                    Console.WriteLine($"[Expand] Expanded {expandedCount} files.");
+                    Serilog.Log.Information($"[Expand] Expanded {expandedCount} files.");
 
                     ProcessStartInfo info = new()
                     {
                         FileName = "git" ,
                         Arguments = $"commit -a -m \"Expanded {expandedCount} files.\"" ,
-                        WorkingDirectory = RootDirectory,
+                        WorkingDirectory = RootDirectory ,
                         RedirectStandardOutput = true ,
                         RedirectStandardError = true ,
                     };
 
-                    var process = Process.Start(info);
+                    Process? process = Process.Start(info);
 
-                    process.WaitForExit();
+                    process?.WaitForExit();
 
-                    Console.WriteLine(process.StandardOutput.ReadToEnd());
+                    Serilog.Log.Information(process?.StandardOutput.ReadToEnd());
 
-                    if (process.ExitCode != 0)
+                    if ((process?.ExitCode ?? -1) != 0)
                     {
-                        Console.Error.WriteLine(process.StandardError.ReadToEnd());
+                        Console.Error.WriteLine(process?.StandardError.ReadToEnd());
                     }
                 }
             }
         );
-
-    public static int Main()
-        => Execute<Build>(static x => x.Compile);
-
-    [ Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)") ]
-    private readonly Configuration Configuration = IsLocalBuild
-        ? Configuration.Debug
-        : Configuration.Release;
-
-    [ GitRepository ] private readonly GitRepository GitRepository;
-    [ GitVersion ] private readonly GitVersion GitVersion;
-
-    private bool ProcessFile([NotNull] string file)
-    {
-        const string RESULT_TEMPLATE = "[ProcessFile] {0}";
-        string result = null;
-
-        try
-        {
-            Console.WriteLine($"[ProcessFile] Processing {file}");
-
-            FileInfo fileInfo = new(file);
-
-            FileStream fileStream = fileInfo.OpenRead();
-
-            using StreamReader reader = new(fileStream);
-            string programText = reader.ReadToEnd();
-
-            fileStream.Close();
-
-            if (programText is null or "")
-            {
-                result = string.Format(RESULT_TEMPLATE , "programText is null or empty.");
-                return false;
-            }
-
-            SyntaxTree tree = CSharpSyntaxTree.ParseText(programText);
-
-            CompilationUnitSyntax root = tree.GetCompilationUnitRoot();
-
-            foreach (SyntaxTrivia item in root.GetLeadingTrivia())
-            {
-                bool processed = item.Kind() switch
-                {
-                    SyntaxKind.SingleLineDocumentationCommentTrivia =>
-                        ProcessToken(fileInfo , item) ,
-                    _ => false ,
-                };
-
-                if (processed)
-                {
-                    result = string.Format(RESULT_TEMPLATE , $"Processed {file}");
-                    return true;
-                }
-
-                break;
-            }
-
-            result = string.Format(RESULT_TEMPLATE , $"Nothing to do in {file}");
-            return false;
-        }
-        finally
-        {
-            Console.WriteLine(result ?? string.Format(RESULT_TEMPLATE, $"No result specified in {file}."));
-        }
-    }
-
-    private bool ProcessToken(FileInfo fileInfo , SyntaxTrivia trivia)
-    {
-        string triviaText = trivia.ToFullString();
-        IEnumerable<string> lines = triviaText
-            .Split('\n', StringSplitOptions.TrimEntries)
-            .Select(static l => l.Replace("///", "", Ordinal)
-                .Trim()
-            );
-
-        triviaText = string.Join(Environment.NewLine , lines);
-
-        XDocument xml = XDocument.Parse(triviaText);
-
-        if (xml.Root?.Name.LocalName is not "Project")
-        {
-            return false;
-        }
-
-        Console.WriteLine($"[ProcessToken] {fileInfo.Name} has valid Project xml.");
-
-        string projectDirectoryPath =
-            Path.Combine(
-                fileInfo.Directory!.FullName,
-                fileInfo.Name.Replace(fileInfo.Extension, "", InvariantCultureIgnoreCase)
-            );
-
-        DirectoryInfo projectDirectory = new(projectDirectoryPath);
-
-        Console.WriteLine($"[ProcessToken] Expanding Project Directory: {projectDirectory}");
-
-        string projectName = projectDirectory.Name;
-
-        Project oldProject = Solution.GetProject(projectName);
-
-        if (oldProject is not null)
-        {
-            Console.WriteLine(
-                $"[ProcessToken] Removing {projectName} from Solution ({Solution.FileName})"
-            );
-            Solution.RemoveProject(oldProject);
-            Solution.Save();
-        }
-
-        if (projectDirectory.Exists)
-        {
-            projectDirectory.Delete(true);
-        }
-
-        projectDirectory.Create();
-
-        string csprojFilename =
-            Path.Combine(
-                projectDirectory.FullName,
-                fileInfo.Name.Replace(fileInfo.Extension, ".csproj", InvariantCultureIgnoreCase)
-            );
-
-        xml.Save(csprojFilename);
-
-        FileInfo projectFile = new(csprojFilename);
-
-        if (!projectFile.Exists)
-        {
-            return false;
-        }
-
-        Console.WriteLine($"[ProcessToken] Created project file: {csprojFilename}");
-
-        string newFileName = Path.Combine(projectFile.DirectoryName!, fileInfo.Name);
-        string source = File.ReadAllText(fileInfo.FullName);
-
-        source = source.Replace(trivia.ToFullString() , "" , InvariantCultureIgnoreCase);
-
-        File.WriteAllText(newFileName , source);
-
-        FileInfo newFile = new(newFileName);
-
-        if (!newFile.Exists)
-        {
-            return false;
-        }
-
-        Console.WriteLine($"[ProcessToken] Wrote Source to {newFile.FullName}");
-
-        Project project = Solution.AddProject(
-            projectFile.Name.Replace(projectFile.Extension, "" , InvariantCultureIgnoreCase),
-            ProjectType.CSharpProject.FirstGuid,
-            projectFile.FullName,
-            Guid.NewGuid(),
-            new Dictionary<string, string>
-            {
-                {
-                    "Debug|Any CPU.ActiveCfg", "Debug|Any CPU"
-                },
-                {
-                    "Debug|Any CPU.Build.0", "Debug|Any CPU"
-                },
-                {
-                    "Release|Any CPU.ActiveCfg", "Release|Any CPU"
-                },
-                {
-                    "Release|Any CPU.Build.0", "Release|Any CPU"
-                },
-            }
-        );
-
-        if (project is null)
-        {
-            return true;
-        }
-
-        Solution.Save();
-
-        Microsoft.Build.Evaluation.Project msbuildProject = project.GetMSBuildProject();
-        Console.WriteLine($"[ProcessToken] Added new project to Solution: {msbuildProject.FullPath}"
-        );
-        Console.WriteLine(
-            $"[ProcessToken] msbuildProject.AllEvaluatedItems.Count: {msbuildProject.AllEvaluatedItems.Count}"
-        );
-        Console.WriteLine(
-            $"[ProcessToken] msbuildProject.AllEvaluatedProperties.Count: {msbuildProject.AllEvaluatedProperties.Count}"
-        );
-
-        ProcessStartInfo info = new()
-        {
-            FileName = "git" ,
-            Arguments = "add .",
-            WorkingDirectory = projectDirectoryPath,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-        };
-
-        var process = Process.Start(info);
-
-        process.WaitForExit();
-
-        Console.WriteLine(process.StandardOutput.ReadToEnd());
-
-        if (process.ExitCode == 0)
-        {
-            return true;
-        }
-
-        Console.Error.WriteLine(process.StandardError.ReadToEnd());
-
-        return false;
-    }
-
-    [ Solution ] private readonly Solution Solution;
-    private string _githubToken;
 }
