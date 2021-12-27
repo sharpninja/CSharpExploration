@@ -14,8 +14,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{406FD816-375C-475A-9E8B-505FA2F33E4C}"
+	ProjectSection(SolutionItems) = preProject
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-singlefilecsharp", "src\build\dotnet-singlefilecsharp.csproj", "{EB608AFE-1EA1-4D1B-BB0F-4DF61D4D3F99}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ParseYaml", "SfcsTemplate\src\ParseYaml\ParseYaml.csproj", "{F68FD9C9-3CDB-4425-B690-48097EBA416E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SingleFile", "SfcsTemplate\src\SingleFile\SingleFile.csproj", "{EB54E442-E393-4D60-BED2-7156E490093E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +33,14 @@ Global
 		{EB608AFE-1EA1-4D1B-BB0F-4DF61D4D3F99}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EB608AFE-1EA1-4D1B-BB0F-4DF61D4D3F99}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EB608AFE-1EA1-4D1B-BB0F-4DF61D4D3F99}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F68FD9C9-3CDB-4425-B690-48097EBA416E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F68FD9C9-3CDB-4425-B690-48097EBA416E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F68FD9C9-3CDB-4425-B690-48097EBA416E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F68FD9C9-3CDB-4425-B690-48097EBA416E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EB54E442-E393-4D60-BED2-7156E490093E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EB54E442-E393-4D60-BED2-7156E490093E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EB54E442-E393-4D60-BED2-7156E490093E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EB54E442-E393-4D60-BED2-7156E490093E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
