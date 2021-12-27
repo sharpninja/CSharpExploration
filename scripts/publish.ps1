@@ -1,5 +1,6 @@
 param(
     [string]$Token=$null,
+    [string]$WorkingFolder=".",
     [switch]$WhatIf=$false
 )
 
@@ -22,6 +23,8 @@ function Test-ExitCode {
 Push-Location
 
 try {
+    Set-Location $WorkingFolder -Verbose:$Verbose
+
     if((-not $token) -or ($token.Length -eq 0)) {
         throw "No Nuget Token was supplied."
     }

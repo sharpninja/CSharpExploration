@@ -13,9 +13,41 @@ internal class Build : Parser
     public static int Main()
         => Execute<Build>(static x => x.Run);
 
+    protected override void OnBuildInitialized()
+    {
+        IReadOnlyCollection<AbsolutePath> sln = RootDirectory
+            .GlobFiles("*.sln");
+
+        if (!sln.Any())
+        {
+            ProcessStartInfo info = new()
+            {
+                FileName = "dotnet",
+                Arguments = "new sln",
+                WorkingDirectory = RootDirectory,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+            };
+
+            Process? process = Process.Start(info);
+
+            process?.WaitForExit();
+
+            Serilog.Log.Information(process?.StandardOutput.ReadToEnd());
+
+            if (process?.ExitCode != 0)
+            {
+                Serilog.Log.Error(process?.StandardError.ReadToEnd());
+            }
+        }
+
+        base.OnBuildInitialized();
+    }
+
     private Target Clean => _ => _
         .Before(Restore)
         .Executes(() => FileSystemTasks.EnsureCleanDirectory(ArtifactsDirectory));
+    
 
     private Target Restore => _ =>
     {

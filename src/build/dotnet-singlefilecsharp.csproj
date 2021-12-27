@@ -36,6 +36,8 @@
     <DebugType>embedded</DebugType>
     <Authors>The Sharp Ninja &amp;lt;ninja@thesharp.ninja&amp;gt;</Authors>
     <RepositoryType>git</RepositoryType>
+    <IncludeSymbols>True</IncludeSymbols>
+    <IncludeSource>True</IncludeSource>
   </PropertyGroup>
 
   <ItemGroup>
@@ -47,11 +49,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\..\..\..\Users\kingd\OneDrive\Pictures\Icons\SingleFileCSharp_64.png">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
-    <None Include="..\README.md">
+    <None Include="SingleFileCSharp_64.png" Pack="True" PackagePath="\" />
+    <None Include="..\..\README.md">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
@@ -62,10 +61,18 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.1.0-1.final" />
     <PackageReference Include="Nuke.Common" Version="6.0.0-beta0012" />
     <PackageReference Include="YamlDotNet" Version="11.2.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Microsoft.Build.Framework" Version="[17.0,)" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.1.0-1.final" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.1.0-1.final" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="4.1.0-1.final" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.1.0-1.final" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="nupkg\" />
   </ItemGroup>
 
 </Project>

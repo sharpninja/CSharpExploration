@@ -11,6 +11,9 @@ using YamlDotNet.Serialization.NamingConventions;
 
 namespace SingleFileCSharp.SingFile;
 
+using Project = Nuke.Common.ProjectModel.Project;
+using Solution = Nuke.Common.ProjectModel.Solution;
+
 internal class Parser: NukeBuild
 {
     private const string DEFAULT_XML = "<Project />";
