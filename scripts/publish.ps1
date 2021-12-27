@@ -49,7 +49,8 @@ try {
 
         "Getting Packages..."
 
-        $packages = Get-ChildItem *.symbols.nupkg -Path ./src -Recurse -ErrorAction Stop -Verbose
+        $packages = Get-ChildItem *.symbols.nupkg -Path ./src -Recurse -ErrorAction Stop -Verbose `
+            | Sort-Object ModifiedDate;
 
         if((-not $packages) -or ($packages.Length -eq 0)) {
             throw "No packages were built for [$csproj]."

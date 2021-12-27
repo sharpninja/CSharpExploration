@@ -29,7 +29,6 @@
     <PackageType>DotnetTool</PackageType>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>dotnet-sfcs</ToolCommandName>
-    <PackageOutputPath>./nupkg</PackageOutputPath>
     <StartupObject>SingleFileCSharp.Build</StartupObject>
     <AssemblyName>SingleFileCSharp</AssemblyName>
     <ApplicationIcon>SingleFileCSharp_64.ico</ApplicationIcon>
@@ -69,10 +68,6 @@
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.1.0-1.final" />
     <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="4.1.0-1.final" />
     <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.1.0-1.final" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="nupkg\" />
   </ItemGroup>
 
 </Project>
