@@ -39,12 +39,14 @@ jobs:
           nuget config -set signatureValidationMode=accept
           dotnet tool install -g nuke.globaltool --prerelease
           dotnet tool install -g gitversion.tool --prerelease
+          dotnet tool install -g powershell
 
       - name: Build Debug and Test
         if: ${{ github.event_name == 'push' }}
         run: |
-          cd ./SingleFileCSharp 
-          . ./build.sh Compile Push --root . --GithubToken "${{ secrets.GITHUB_TOKEN }}"
+          # cd ./SingleFileCSharp 
+          # . ./build.sh Compile Push --root . --GithubToken "${{ secrets.GITHUB_TOKEN }}"
+          pwsh ./scripts/Publish.ps1 "${{ secrets.GITHUB_TOKEN }}" -Verbose
 
 #     - name: Build Release and Publish
 #       if: ${{ github.event_name == 'release' || github.event_name == 'workflow_dispatch' }}
