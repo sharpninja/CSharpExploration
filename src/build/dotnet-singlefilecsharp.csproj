@@ -10,7 +10,7 @@
     <NukeTelemetryVersion>1</NukeTelemetryVersion>
     <ImplicitUsings>true</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
     <PackageId>dotnet-singlefilecsharp</PackageId>
     <Company>Gateway Programming School, Inc.</Company>
     <Title>Single File C#</Title>
