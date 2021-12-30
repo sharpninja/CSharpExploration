@@ -8,9 +8,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.gitignore = .gitignore
 		GitVersion.yml = GitVersion.yml
 		nuget.config = nuget.config
-		SfcsTemplate\src\ParseYaml.cs = SfcsTemplate\src\ParseYaml.cs
 		scripts\publish.ps1 = scripts\publish.ps1
-		SfcsTemplate\src\SingleFile.cs = SfcsTemplate\src\SingleFile.cs
+		SfcsTemplate\src\split.cs = SfcsTemplate\src\split.cs
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{406FD816-375C-475A-9E8B-505FA2F33E4C}"
@@ -19,9 +18,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{406FD816-375
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-singlefilecsharp", "src\build\dotnet-singlefilecsharp.csproj", "{EB608AFE-1EA1-4D1B-BB0F-4DF61D4D3F99}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ParseYaml", "SfcsTemplate\src\ParseYaml\ParseYaml.csproj", "{B25ED8DB-AE9D-4672-B2D6-170E7667593C}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SingleFile", "SfcsTemplate\src\SingleFile\SingleFile.csproj", "{51F55148-B265-4739-BE23-80A817828C2F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "split", "SfcsTemplate\src\split\split.csproj", "{35B3A03C-642E-451B-A0F5-0AA73CCEAE9C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,14 +30,10 @@ Global
 		{EB608AFE-1EA1-4D1B-BB0F-4DF61D4D3F99}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EB608AFE-1EA1-4D1B-BB0F-4DF61D4D3F99}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EB608AFE-1EA1-4D1B-BB0F-4DF61D4D3F99}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B25ED8DB-AE9D-4672-B2D6-170E7667593C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B25ED8DB-AE9D-4672-B2D6-170E7667593C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B25ED8DB-AE9D-4672-B2D6-170E7667593C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B25ED8DB-AE9D-4672-B2D6-170E7667593C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{51F55148-B265-4739-BE23-80A817828C2F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{51F55148-B265-4739-BE23-80A817828C2F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{51F55148-B265-4739-BE23-80A817828C2F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{51F55148-B265-4739-BE23-80A817828C2F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{35B3A03C-642E-451B-A0F5-0AA73CCEAE9C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{35B3A03C-642E-451B-A0F5-0AA73CCEAE9C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{35B3A03C-642E-451B-A0F5-0AA73CCEAE9C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{35B3A03C-642E-451B-A0F5-0AA73CCEAE9C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

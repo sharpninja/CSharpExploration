@@ -1,8 +1,9 @@
 {
   "profiles": {
     "_build": {
-      "commandName": "Project",
-      "workingDirectory": "."
+        "commandName": "Project",
+        "commandLineArgs": "-RootDirectory .",
+        "workingDirectory": "C:\\GitHub\\GPS\\SingleFileCSharp\\SfcsTemplate\\src"
     }
   }
 }

@@ -1,8 +1,5 @@
-﻿using System.Linq;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Newtonsoft.Json;
-using Nuke.Common.ProjectModel;
+﻿using Newtonsoft.Json;
+
 using Serilog;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
@@ -11,6 +8,8 @@ using YamlDotNet.Serialization.NamingConventions;
 
 namespace SingleFileCSharp.SingFile;
 
+using System.Reflection;
+
 using Project = Nuke.Common.ProjectModel.Project;
 using Solution = Nuke.Common.ProjectModel.Solution;
 
@@ -18,7 +17,7 @@ internal class Parser: NukeBuild
 {
     private const string DEFAULT_XML = "<Project />";
 
-    internal bool ProcessFile([NotNull] string file)
+    internal bool ProcessFile(string file)
     {
         const string RESULT_TEMPLATE = "[ProcessFile] {0}";
         string? result = null;
@@ -82,17 +81,17 @@ internal class Parser: NukeBuild
             return usingDirectives;
         }
 
-        var directive = root.GetFirstToken(includeDirectives: true); 
+        var directive = root.GetFirstToken(includeDirectives: true);
 
         if (directive.Parent is null)
         {
             directive = directive.GetNextToken(includeDirectives: true);
         }
-        
+
         while ((directive.Parent?.Kind() ?? SyntaxKind.None) != SyntaxKind.None)
         {
             var kind = directive.Parent?.Kind();
-            
+
             Serilog.Log.Information($"kind: {kind}");
 
             bool found = kind switch
@@ -119,8 +118,8 @@ internal class Parser: NukeBuild
     }
 
     private bool ProcessToken(
-        FileInfo fileInfo , 
-        SyntaxTrivia trivia, 
+        FileInfo fileInfo ,
+        SyntaxTrivia trivia,
         CompilationUnitSyntax root)
     {
         SyntaxNode? structure = trivia.GetStructure();
@@ -152,7 +151,7 @@ internal class Parser: NukeBuild
             {
                 return false;
             }
-            
+
             Log.Information($"[ProcessToken] {fileInfo.Name} has valid Project xml.");
 
             projectXml = xml.ToString();
@@ -162,10 +161,7 @@ internal class Parser: NukeBuild
             // Ignore
         }
 
-        if (projectXml is null)
-        {
-            projectXml = YamlToXml(triviaText);
-        }
+        projectXml ??= YamlToXml(triviaText);
 
         string projectDirectoryPath =
             Path.Combine(
@@ -204,11 +200,11 @@ internal class Parser: NukeBuild
             );
 
         FileInfo projectFile = new(csprojFilename);
-        
+
         using StreamWriter writer = new (projectFile.OpenWrite());
-        
+
         writer.Write(projectXml);
-        
+
         writer.Close();
 
         if (!projectFile.Exists)
@@ -217,7 +213,7 @@ internal class Parser: NukeBuild
         }
 
         Log.Information($"[ProcessToken] Created project file: {csprojFilename}");
-        
+
         List<SyntaxNode>? usingDirectives = GetUsingDirectives(fileInfo , root!);
 
         if (usingDirectives is { Count: > 0 })
@@ -310,7 +306,7 @@ internal class Parser: NukeBuild
 
         return false;
     }
-    
+
     [ Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)") ]
     protected readonly Configuration Configuration = IsLocalBuild
         ? Configuration.Debug
@@ -319,12 +315,35 @@ internal class Parser: NukeBuild
     [ GitRepository ] protected readonly GitRepository? GitRepository;
     [ GitVersion ] protected readonly GitVersion? GitVersion;
 
-    [ Solution ] protected readonly Solution? Solution;
+    [ Solution ] protected Solution? Solution { get; }
     private string? _githubToken;
-    
+    static Parser _instance;
+
+    public Parser()
+        : base()
+        => Parser._instance = this;
+
+    public RelativePath GetSolution()
+    {
+        RelativePath newSln =
+            (RelativePath)(string)(SolutionDirectory
+                .GlobFiles("*.sln")
+                .FirstOrDefault());
+
+        if (newSln is not null)
+        {
+            return newSln;
+        }
+
+        return (RelativePath)"./sfcs.sln";
+    }
+
     protected static AbsolutePath ArtifactsDirectory => RootDirectory / "artifacts";
 
-    [ Parameter("Github Personal Access Token") ]
+    [PropertyTab("Folder to locate or create the solution file.")]
+    protected static AbsolutePath SolutionDirectory { get; set; } = (AbsolutePath)Environment.CurrentDirectory;
+
+    [Parameter("Github Personal Access Token") ]
     protected string? GithubToken
     {
         get => _githubToken;
@@ -333,6 +352,11 @@ internal class Parser: NukeBuild
             Log.Information($"GithubToken Length: {value?.Length ?? -1}");
             _githubToken = value;
         }
+    }
+
+    public static Parser Current
+    {
+        get => _instance;
     }
 
     public string YamlToXml(string yaml)
@@ -353,7 +377,7 @@ internal class Parser: NukeBuild
             .JsonCompatible()
             .Build();
         string json = serializer.Serialize(project);
-        
+
         while (json.Contains("\"_", Ordinal))
         {
             json = json.Replace("\"_", "\"@", Ordinal);
@@ -362,5 +386,49 @@ internal class Parser: NukeBuild
         XDocument? xml = JsonConvert.DeserializeXNode(json);
 
         return xml?.ToString() ?? DEFAULT_XML;
+    }
+}
+
+public class SfcsSolutionAttribute : SolutionAttribute
+{
+    public SfcsSolutionAttribute()
+        : base()
+    {
+        var parser = Parser.Current;
+
+        MemberInfo[] memberInfos = typeof(SolutionAttribute)
+            .GetMember("_relativePath", BindingFlags.NonPublic | BindingFlags.Instance);
+
+        if (memberInfos is not
+            {
+                Length: > 0,
+            })
+        {
+            return;
+        }
+
+        MemberInfo? mi = memberInfos.FirstOrDefault(static m
+            => m.MemberType is MemberTypes.Field or MemberTypes.Property
+        );
+
+        if (mi is null)
+        {
+            return;
+        }
+
+        var sln = (string)parser.GetSolution();
+
+        switch (mi)
+        {
+            case FieldInfo fi:
+                fi.SetValue(this, sln);
+
+                break;
+
+            case PropertyInfo pi:
+                pi.SetValue(this, sln);
+
+                break;
+        }
     }
 }

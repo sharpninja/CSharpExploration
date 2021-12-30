@@ -28,7 +28,7 @@ internal sealed class Configuration : Enumeration
         }
     }
 
-    public static implicit operator string([NotNull] Configuration configuration)
+    public static implicit operator string(Configuration configuration)
         => configuration.Value;
 
     public static Configuration Release

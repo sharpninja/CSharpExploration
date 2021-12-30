@@ -13,32 +13,18 @@ internal class Build : Parser
     public static int Main()
         => Execute<Build>(static x => x.Run);
 
+    protected override void OnBuildCreated()
+    {
+        base.OnBuildCreated();
+    }
+
     protected override void OnBuildInitialized()
     {
-        IReadOnlyCollection<AbsolutePath> sln = RootDirectory
-            .GlobFiles("*.sln");
+        AbsolutePath newSln = SolutionDirectory.GlobFiles("*.sln")
+            .FirstOrDefault(defaultValue: Solution?.Path ?? default);
 
-        if (!sln.Any())
+        if (newSln is not null)
         {
-            ProcessStartInfo info = new()
-            {
-                FileName = "dotnet",
-                Arguments = "new sln",
-                WorkingDirectory = RootDirectory,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-            };
-
-            Process? process = Process.Start(info);
-
-            process?.WaitForExit();
-
-            Serilog.Log.Information(process?.StandardOutput.ReadToEnd());
-
-            if (process?.ExitCode != 0)
-            {
-                Serilog.Log.Error(process?.StandardError.ReadToEnd());
-            }
         }
 
         base.OnBuildInitialized();
@@ -47,11 +33,10 @@ internal class Build : Parser
     private Target Clean => _ => _
         .Before(Restore)
         .Executes(() => FileSystemTasks.EnsureCleanDirectory(ArtifactsDirectory));
-    
+
 
     private Target Restore => _ =>
     {
-        Serilog.Log.Information($"[Restore] PWD: {Solution?.Directory}");
         IReadOnlyCollection<Output> Actions() =>
             DotNetTasks.DotNetRestore(s =>
             {
@@ -114,7 +99,7 @@ internal class Build : Parser
                     process?.WaitForExit();
 
                     Serilog.Log.Information(process?.StandardOutput.ReadToEnd());
-                    
+
                     if(process?.ExitCode != 0)
                     {
                         Serilog.Log.Error(process?.StandardError.ReadToEnd());
@@ -122,7 +107,7 @@ internal class Build : Parser
                 }
             }
         });
-    
+
     private Target Push => _ => _
         .DependsOn(Expand)
         .Executes(() =>

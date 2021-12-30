@@ -1,0 +1,9 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <ImplicitUsings>True</ImplicitUsings>
+    <Nullable>Enable</Nullable>
+    <DefaultNamespace>MarkdownSplitter</DefaultNamespace>
+  </PropertyGroup>
+</Project>
