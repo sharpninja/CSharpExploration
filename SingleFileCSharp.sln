@@ -6,6 +6,7 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{489F5B7A-3ECF-42FF-81A5-5D4189C4A773}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
+		.github\workflows\dotnet.yml = .github\workflows\dotnet.yml
 		GitVersion.yml = GitVersion.yml
 		nuget.config = nuget.config
 		scripts\publish.ps1 = scripts\publish.ps1
@@ -13,8 +14,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{406FD816-375C-475A-9E8B-505FA2F33E4C}"
-	ProjectSection(SolutionItems) = preProject
-	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-singlefilecsharp", "src\build\dotnet-singlefilecsharp.csproj", "{EB608AFE-1EA1-4D1B-BB0F-4DF61D4D3F99}"
 EndProject

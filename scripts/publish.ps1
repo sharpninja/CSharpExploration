@@ -23,6 +23,7 @@ function Test-ExitCode {
 Push-Location
 
 try {
+    $projectName = "dotnet-singlefilecsharp"
     Set-Location $WorkingFolder -Verbose:$Verbose
 
     if((-not $token) -or ($token.Length -eq 0)) {
@@ -37,20 +38,25 @@ try {
 
     $ConfigFile = $config.FullName
 
-    $project = Get-ChildItem -Path ./src *.csproj -Recurse -ErrorAction Stop
+    $project = Get-ChildItem -Path ./src "$projectName.csproj" -Recurse -ErrorAction Stop
 
     if($project) {
         $csproj = $project.FullName
         "Building [$csproj]..."
 
-        & dotnet build $csproj -c Release --no-restore #--nologo -v quiet
+        & dotnet build $csproj -c Release --no-restore --nologo #-v quiet
 
-        Test-ExitCode $LASTEXITCODE "Failed to build [${project.FullName}]."
+        Test-ExitCode $LASTEXITCODE "Failed to build [$csproj]."
 
         "Getting Packages..."
 
-        $packages = Get-ChildItem *.symbols.nupkg -Path ./src -Recurse -ErrorAction Stop -Verbose `
+        $packages = Get-ChildItem "$projectName.*.symbols.nupkg" -Path ./src -Recurse -ErrorAction Stop -Verbose `
             | Sort-Object ModifiedDate;
+
+        if((-not $packages) -or ($packages.Length -eq 0)) {
+            $packages = Get-ChildItem "$projectName.*.nupkg" -Path ./src -Recurse -ErrorAction Stop -Verbose `
+                | Sort-Object ModifiedDate;
+        }
 
         if((-not $packages) -or ($packages.Length -eq 0)) {
             throw "No packages were built for [$csproj]."
